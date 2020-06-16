@@ -1,0 +1,1 @@
+python stardist_train.py --path data/C1-160930.nd2_PC3_0Gy_p2/train --quick_demo False --model_dir iterModels --model_name stardist_9 --epochs 260 --grid 4 4 --train_batch_size 23 --train_learning_rate 0.000240 --augmenter simple_augmenter
