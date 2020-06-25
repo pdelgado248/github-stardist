@@ -5,7 +5,7 @@
 # *StarDist* - Object Detection with Star-convex Shapes 
 
 
-New data: https://github.com/pdelgado248/github-stardist/files/4791779/data.zip
+New data: https://github.com/pdelgado248/github-stardist/files/4832704/data.zip
 
 ![](https://github.com/mpicbg-csbd/stardist/raw/master/images/stardist_overview.png)
 
