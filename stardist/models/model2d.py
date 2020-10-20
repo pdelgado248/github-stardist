@@ -285,13 +285,13 @@ class StarDist2D(StarDistBase):
         output_dist  = Conv2D(self.config.n_rays, (1,1), name='dist', padding='same', activation='linear')(unet)
         
         #~~
-        with tf. device("gpu:0"):
-        	compModel=Model([input_img,input_mask], [output_prob,output_dist])
-        	compModel.compile(optimizer=keras.optimizers.Adagrad(lr=self.config.lr))
+        #with tf. device("gpu:0"):
+        #	compModel=Model([input_img,input_mask], [output_prob,output_dist])
+        #	compModel.compile(optimizer=keras.optimizers.Adagrad(lr=self.config.lr))
 
-        return compModel
+        #return compModel
         #~~
-
+        return(Model([input_img,input_mask], [output_prob,output_dist]))
 
     def train(self, X, Y, validation_data, augmenter=None, seed=None, epochs=None, steps_per_epoch=None):
         """Train the neural network with the given data.
