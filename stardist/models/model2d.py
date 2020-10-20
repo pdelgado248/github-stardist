@@ -260,7 +260,7 @@ class StarDist2D(StarDistBase):
     	#~~
     	#with tf.device('gpu:0'):
     	#~~Indentation
-    	
+
         self.config.backbone == 'unet' or _raise(NotImplementedError())
 
         input_img  = Input(self.config.net_input_shape, name='input')
@@ -293,12 +293,12 @@ class StarDist2D(StarDistBase):
         
         #~~
         #with tf. device("gpu:0"):
-        #	compModel=Model([input_img,input_mask], [output_prob,output_dist])
-        #	compModel.compile(optimizer=keras.optimizers.Adagrad(lr=self.config.lr))
+        compModel=Model([input_img,input_mask], [output_prob,output_dist])
+        compModel.compile(optimizer=keras.optimizers.Adagrad(lr=self.config.lr))
 
-        #return compModel
+        return compModel
         #~~
-        return(Model([input_img,input_mask], [output_prob,output_dist]))
+        #return(Model([input_img,input_mask], [output_prob,output_dist]))
 
     def train(self, X, Y, validation_data, augmenter=None, seed=None, epochs=None, steps_per_epoch=None):
         """Train the neural network with the given data.
