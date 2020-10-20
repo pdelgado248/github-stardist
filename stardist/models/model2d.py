@@ -285,8 +285,9 @@ class StarDist2D(StarDistBase):
         output_dist  = Conv2D(self.config.n_rays, (1,1), name='dist', padding='same', activation='linear')(unet)
         
         #~~
-        compModel=Model([input_img,input_mask], [output_prob,output_dist])
-        compModel.compile(optimizer=keras.optimizers.Adagrad(lr=self.config.lr))
+        with tf. device("gpu:0"):
+        	compModel=Model([input_img,input_mask], [output_prob,output_dist])
+        	compModel.compile(optimizer=keras.optimizers.Adagrad(lr=self.config.lr))
 
         return compModel
         #~~
