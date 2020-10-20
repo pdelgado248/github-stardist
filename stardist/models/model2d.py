@@ -23,7 +23,9 @@ from ..utils import edt_prob, _normalize_grid
 from ..geometry import star_dist, dist_to_coord, polygons_to_label
 from ..nms import non_maximum_suppression
 
-
+#~~
+import tensorflow as tf
+#~~
 
 class StarDistData2D(StarDistDataBase):
 
@@ -254,44 +256,48 @@ class StarDist2D(StarDistBase):
 
 
     def _build(self):
-        self.config.backbone == 'unet' or _raise(NotImplementedError())
 
-        input_img  = Input(self.config.net_input_shape, name='input')
-        if backend_channels_last():
-            grid_shape = tuple(n//g if n is not None else None for g,n in zip(self.config.grid, self.config.net_mask_shape[:-1])) + (1,)
-        else:
-            grid_shape = (1,) + tuple(n//g if n is not None else None for g,n in zip(self.config.grid, self.config.net_mask_shape[1:]))
-        input_mask = Input(grid_shape, name='dist_mask')
+    	#~~
+    	with tf.device('gpu:0'):
+    	#~~Indentation
+        	self.config.backbone == 'unet' or _raise(NotImplementedError())
 
-        unet_kwargs = {k[len('unet_'):]:v for (k,v) in vars(self.config).items() if k.startswith('unet_')}
+        	input_img  = Input(self.config.net_input_shape, name='input')
+        	if backend_channels_last():
+            	grid_shape = tuple(n//g if n is not None else None for g,n in zip(self.config.grid, self.config.net_mask_shape[:-1])) + (1,)
+        	else:
+            	grid_shape = (1,) + tuple(n//g if n is not None else None for g,n in zip(self.config.grid, self.config.net_mask_shape[1:]))
+        	input_mask = Input(grid_shape, name='dist_mask')
 
-        # maxpool input image to grid size
-        pooled = np.array([1,1])
-        pooled_img = input_img
-        while tuple(pooled) != tuple(self.config.grid):
-            pool = 1 + (np.asarray(self.config.grid) > pooled)
-            pooled *= pool
-            for _ in range(self.config.unet_n_conv_per_depth):
-                pooled_img = Conv2D(self.config.unet_n_filter_base, self.config.unet_kernel_size,
+        	unet_kwargs = {k[len('unet_'):]:v for (k,v) in vars(self.config).items() if k.startswith('unet_')}
+
+        	# maxpool input image to grid size
+        	pooled = np.array([1,1])
+        	pooled_img = input_img
+        	while tuple(pooled) != tuple(self.config.grid):
+            	pool = 1 + (np.asarray(self.config.grid) > pooled)
+            	pooled *= pool
+            	for _ in range(self.config.unet_n_conv_per_depth):
+                	pooled_img = Conv2D(self.config.unet_n_filter_base, self.config.unet_kernel_size,
                                     padding='same', activation=self.config.unet_activation)(pooled_img)
-            pooled_img = MaxPooling2D(pool)(pooled_img)
+            	pooled_img = MaxPooling2D(pool)(pooled_img)
 
-        unet        = unet_block(**unet_kwargs)(pooled_img)
-        if self.config.net_conv_after_unet > 0:
-            unet    = Conv2D(self.config.net_conv_after_unet, self.config.unet_kernel_size,
+        	unet        = unet_block(**unet_kwargs)(pooled_img)
+        	if self.config.net_conv_after_unet > 0:
+            	unet    = Conv2D(self.config.net_conv_after_unet, self.config.unet_kernel_size,
                              name='features', padding='same', activation=self.config.unet_activation)(unet)
 
-        output_prob  = Conv2D(1,                  (1,1), name='prob', padding='same', activation='sigmoid')(unet)
-        output_dist  = Conv2D(self.config.n_rays, (1,1), name='dist', padding='same', activation='linear')(unet)
+        	output_prob  = Conv2D(1,                  (1,1), name='prob', padding='same', activation='sigmoid')(unet)
+        	output_dist  = Conv2D(self.config.n_rays, (1,1), name='dist', padding='same', activation='linear')(unet)
         
-        #~~
-        #with tf. device("gpu:0"):
-        #	compModel=Model([input_img,input_mask], [output_prob,output_dist])
-        #	compModel.compile(optimizer=keras.optimizers.Adagrad(lr=self.config.lr))
+        	#~~
+        	#with tf. device("gpu:0"):
+        	#	compModel=Model([input_img,input_mask], [output_prob,output_dist])
+        	#	compModel.compile(optimizer=keras.optimizers.Adagrad(lr=self.config.lr))
 
-        #return compModel
-        #~~
-        return(Model([input_img,input_mask], [output_prob,output_dist]))
+        	#return compModel
+        	#~~
+        	return(Model([input_img,input_mask], [output_prob,output_dist]))
 
     def train(self, X, Y, validation_data, augmenter=None, seed=None, epochs=None, steps_per_epoch=None):
         """Train the neural network with the given data.
