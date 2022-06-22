@@ -1,6 +1,6 @@
 matplotlib==3.2.1
 csbdeep==0.5.1
-numpy==1.16.0
+numpy==1.22.0
 tqdm==4.44.1
 tifffile==2020.2.16
 math==2.6
